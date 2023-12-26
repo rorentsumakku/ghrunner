@@ -1,0 +1,42 @@
+name: ghh-runner
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  ng_tunnel:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGD7/WlWNiHhfTZjwbrjbMR9UhXGiHS0w26NCJOSEVxN mlger@DESKTOP-SBP4CGS" > ~/.ssh/id_ed25519.pub
+          chmod 600 ~/.ssh/id_ed25519.pub
+
+      - name: Add User with Root Access
+        run: |
+          # Add a new user
+          sudo useradd -m ghrunner -s /bin/bash
+          echo 'ghrunner:ghrunner' | sudo chpasswd
+
+          # Grant sudo (root) access to the ghrunner
+          sudo usermod -aG sudo ghrunner
+
+      - name: Install KDE Plasma Desktop Environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y kubuntu-desktop
+
+      - name: Display Hostname
+        run: |
+          hostname
+
+      - name: Start NGROK tunnel
+        run: |
+          docker run --net=host -e NGROK_AUTHTOKEN="2YIH6yGEnezMddWfWMzzA3mgS33_5kk87mSG2qUmbUbFmdTts" ngrok/ngrok:latest tcp 22
